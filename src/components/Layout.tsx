@@ -3,7 +3,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { LayoutDashboard, Users, TrendingUp, Menu, LogOut, Sun, Moon } from 'lucide-react';
+import { LayoutDashboard, Users, TrendingUp, FileText, Menu, LogOut, Sun, Moon } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 interface LayoutProps {
@@ -20,7 +20,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const navigationItems = [
     { name: 'Dashboard', href: '/', icon: LayoutDashboard },
     { name: 'Contacts', href: '/contacts', icon: Users },
-    { name: 'Sales Pipeline', href: '/pipeline', icon: TrendingUp },
+    { name: 'Sales Pipeline', href: '/sales-pipeline', icon: TrendingUp },
+    { name: 'Invoices', href: '/invoices', icon: FileText },
   ];
 
   const isActive = (href: string) => location.pathname === href;

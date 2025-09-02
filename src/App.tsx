@@ -10,6 +10,7 @@ import Layout from "@/components/Layout";
 import Dashboard from "@/pages/Dashboard";
 import Contacts from "@/pages/Contacts";
 import SalesPipeline from "@/pages/SalesPipeline";
+import Invoices from "@/pages/Invoices";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -34,7 +35,8 @@ const AppRoutes = () => {
       <Routes>
         <Route path="/" element={<Dashboard />} />
         <Route path="/contacts" element={<Contacts />} />
-        <Route path="/pipeline" element={<SalesPipeline />} />
+        <Route path="/sales-pipeline" element={<SalesPipeline />} />
+        <Route path="/invoices" element={<Invoices />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Layout>

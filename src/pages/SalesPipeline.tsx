@@ -9,12 +9,13 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Edit, Trash2, Filter } from 'lucide-react';
+import { Plus, Edit, Trash2, Filter, Eye } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Contact {
   id: string;
   name: string;
+  company: string;
 }
 
 interface SalesPipeline {
@@ -22,8 +23,9 @@ interface SalesPipeline {
   title: string;
   description: string | null;
   contact_id: string | null;
-  status: string;
+  status: 'In progress' | 'Closed won' | 'Cancelled';
   notes: string | null;
+  amount: number;
   created_at: string;
   contacts?: Contact;
 }
@@ -32,8 +34,9 @@ interface PipelineFormData {
   title: string;
   description: string;
   contact_id: string;
-  status: string;
+  status: 'In progress' | 'Closed won' | 'Cancelled';
   notes: string;
+  amount: number;
 }
 
 const SalesPipeline = () => {
@@ -48,8 +51,9 @@ const SalesPipeline = () => {
     title: '',
     description: '',
     contact_id: '',
-    status: 'pending',
+    status: 'In progress',
     notes: '',
+    amount: 0,
   });
 
   useEffect(() => {
@@ -70,14 +74,15 @@ const SalesPipeline = () => {
           *,
           contacts (
             id,
-            name
+            name,
+            company
           )
         `)
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setPipelines(data || []);
+      setPipelines((data as SalesPipeline[]) || []);
     } catch (error) {
       console.error('Error fetching pipelines:', error);
       toast.error('Failed to fetch sales pipelines');
@@ -92,7 +97,7 @@ const SalesPipeline = () => {
     try {
       const { data, error } = await supabase
         .from('contacts')
-        .select('id, name')
+        .select('id, name, company')
         .eq('user_id', user.id)
         .order('name');
 
@@ -154,6 +159,7 @@ const SalesPipeline = () => {
       contact_id: pipeline.contact_id || '',
       status: pipeline.status,
       notes: pipeline.notes || '',
+      amount: pipeline.amount,
     });
     setDialogOpen(true);
   };
@@ -181,38 +187,22 @@ const SalesPipeline = () => {
       title: '',
       description: '',
       contact_id: '',
-      status: 'pending',
+      status: 'In progress',
       notes: '',
+      amount: 0,
     });
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'pending':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'in_progress':
+      case 'In progress':
         return 'bg-blue-100 text-blue-800';
-      case 'closed_won':
+      case 'Closed won':
         return 'bg-green-100 text-green-800';
-      case 'closed_lost':
+      case 'Cancelled':
         return 'bg-red-100 text-red-800';
       default:
         return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  const getStatusLabel = (status: string) => {
-    switch (status) {
-      case 'pending':
-        return 'Pending';
-      case 'in_progress':
-        return 'In Progress';
-      case 'closed_won':
-        return 'Closed Won';
-      case 'closed_lost':
-        return 'Closed Lost';
-      default:
-        return status;
     }
   };
 
@@ -241,10 +231,9 @@ const SalesPipeline = () => {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value="pending">Pending</SelectItem>
-              <SelectItem value="in_progress">In Progress</SelectItem>
-              <SelectItem value="closed_won">Closed Won</SelectItem>
-              <SelectItem value="closed_lost">Closed Lost</SelectItem>
+              <SelectItem value="In progress">In progress</SelectItem>
+              <SelectItem value="Closed won">Closed won</SelectItem>
+              <SelectItem value="Cancelled">Cancelled</SelectItem>
             </SelectContent>
           </Select>
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
@@ -280,7 +269,7 @@ const SalesPipeline = () => {
                     id="description"
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    rows={3}
+                    className="h-32"
                   />
                 </div>
                 <div>
@@ -296,28 +285,40 @@ const SalesPipeline = () => {
                       <SelectItem value="">No contact</SelectItem>
                       {contacts.map((contact) => (
                         <SelectItem key={contact.id} value={contact.id}>
-                          {contact.name}
+                          {contact.name} - {contact.company}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
-                <div>
-                  <Label htmlFor="status">Status</Label>
-                  <Select 
-                    value={formData.status} 
-                    onValueChange={(value) => setFormData({ ...formData, status: value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="pending">Pending</SelectItem>
-                      <SelectItem value="in_progress">In Progress</SelectItem>
-                      <SelectItem value="closed_won">Closed Won</SelectItem>
-                      <SelectItem value="closed_lost">Closed Lost</SelectItem>
-                    </SelectContent>
-                  </Select>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="amount">Amount</Label>
+                    <Input
+                      id="amount"
+                      type="number"
+                      step="0.01"
+                      value={formData.amount}
+                      onChange={(e) => setFormData({ ...formData, amount: parseFloat(e.target.value) || 0 })}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="status">Status</Label>
+                    <Select 
+                      value={formData.status} 
+                      onValueChange={(value: 'In progress' | 'Closed won' | 'Cancelled') => setFormData({ ...formData, status: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="In progress">In progress</SelectItem>
+                        <SelectItem value="Closed won">Closed won</SelectItem>
+                        <SelectItem value="Cancelled">Cancelled</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
                 <div>
                   <Label htmlFor="notes">Notes</Label>
@@ -357,19 +358,20 @@ const SalesPipeline = () => {
               <TableHead>Title</TableHead>
               <TableHead>Description</TableHead>
               <TableHead>Contact</TableHead>
-              <TableHead>Date</TableHead>
+              <TableHead>Amount</TableHead>
               <TableHead>Status</TableHead>
+              <TableHead>Date</TableHead>
               <TableHead>Notes</TableHead>
-              <TableHead className="w-24">Actions</TableHead>
+              <TableHead className="w-32">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filteredPipelines.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center py-6 text-muted-foreground">
+                <TableCell colSpan={8} className="text-center py-6 text-muted-foreground">
                   {statusFilter === 'all' 
                     ? 'No sales pipelines found. Create your first pipeline to get started.'
-                    : `No pipelines found with status "${getStatusLabel(statusFilter)}".`
+                    : `No pipelines found with status "${statusFilter}".`
                   }
                 </TableCell>
               </TableRow>
@@ -380,14 +382,22 @@ const SalesPipeline = () => {
                   <TableCell className="max-w-40 truncate">
                     {pipeline.description || '-'}
                   </TableCell>
-                  <TableCell>{pipeline.contacts?.name || 'No contact'}</TableCell>
                   <TableCell>
-                    {new Date(pipeline.created_at).toLocaleDateString()}
+                    <div>
+                      <div className="font-medium">{pipeline.contacts?.name || 'No contact'}</div>
+                      {pipeline.contacts?.company && (
+                        <div className="text-sm text-muted-foreground">{pipeline.contacts.company}</div>
+                      )}
+                    </div>
                   </TableCell>
+                  <TableCell>${pipeline.amount}</TableCell>
                   <TableCell>
                     <Badge className={getStatusColor(pipeline.status)}>
-                      {getStatusLabel(pipeline.status)}
+                      {pipeline.status}
                     </Badge>
+                  </TableCell>
+                  <TableCell>
+                    {new Date(pipeline.created_at).toLocaleDateString()}
                   </TableCell>
                   <TableCell className="max-w-32 truncate">
                     {pipeline.notes || '-'}
