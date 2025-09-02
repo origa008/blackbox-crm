@@ -50,6 +50,66 @@ export type Database = {
         }
         Relationships: []
       }
+      invoices: {
+        Row: {
+          amount: number
+          contact_id: string | null
+          created_at: string
+          description: string | null
+          due_date: string | null
+          id: string
+          invoice_date: string
+          sales_pipeline_id: string | null
+          serial_number: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount?: number
+          contact_id?: string | null
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          invoice_date?: string
+          sales_pipeline_id?: string | null
+          serial_number: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          contact_id?: string | null
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          invoice_date?: string
+          sales_pipeline_id?: string | null
+          serial_number?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoices_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_sales_pipeline_id_fkey"
+            columns: ["sales_pipeline_id"]
+            isOneToOne: false
+            referencedRelation: "sales_pipelines"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       messages: {
         Row: {
           content: string
@@ -100,6 +160,7 @@ export type Database = {
       }
       sales_pipelines: {
         Row: {
+          amount: number | null
           contact_id: string | null
           created_at: string
           description: string | null
@@ -111,6 +172,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          amount?: number | null
           contact_id?: string | null
           created_at?: string
           description?: string | null
@@ -122,6 +184,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          amount?: number | null
           contact_id?: string | null
           created_at?: string
           description?: string | null
