@@ -23,7 +23,7 @@ interface SalesPipeline {
   title: string;
   description: string | null;
   contact_id: string | null;
-  status: 'pending' | 'in_progress' | 'closed_won' | 'closed_lost';
+  status: 'in_progress' | 'closed_won' | 'closed_lost';
   notes: string | null;
   amount: number;
   created_at: string;
@@ -34,7 +34,7 @@ interface PipelineFormData {
   title: string;
   description: string;
   contact_id: string;
-  status: 'pending' | 'in_progress' | 'closed_won' | 'closed_lost';
+  status: 'in_progress' | 'closed_won' | 'closed_lost';
   notes: string;
   amount: number;
 }
@@ -51,7 +51,7 @@ const SalesPipeline = () => {
     title: '',
     description: '',
     contact_id: '',
-    status: 'pending',
+    status: 'in_progress',
     notes: '',
     amount: 0,
   });
@@ -187,7 +187,7 @@ const SalesPipeline = () => {
       title: '',
       description: '',
       contact_id: '',
-      status: 'pending',
+      status: 'in_progress',
       notes: '',
       amount: 0,
     });
@@ -195,8 +195,6 @@ const SalesPipeline = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'pending':
-        return 'bg-yellow-100 text-yellow-800';
       case 'in_progress':
         return 'bg-blue-100 text-blue-800';
       case 'closed_won':
@@ -233,7 +231,6 @@ const SalesPipeline = () => {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value="pending">Pending</SelectItem>
               <SelectItem value="in_progress">In Progress</SelectItem>
               <SelectItem value="closed_won">Closed Won</SelectItem>
               <SelectItem value="closed_lost">Closed Lost</SelectItem>
@@ -310,13 +307,12 @@ const SalesPipeline = () => {
                     <Label htmlFor="status">Status</Label>
                     <Select 
                       value={formData.status} 
-                      onValueChange={(value: 'pending' | 'in_progress' | 'closed_won' | 'closed_lost') => setFormData({ ...formData, status: value })}
+                      onValueChange={(value: 'in_progress' | 'closed_won' | 'closed_lost') => setFormData({ ...formData, status: value })}
                     >
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="pending">Pending</SelectItem>
                         <SelectItem value="in_progress">In Progress</SelectItem>
                         <SelectItem value="closed_won">Closed Won</SelectItem>
                         <SelectItem value="closed_lost">Closed Lost</SelectItem>

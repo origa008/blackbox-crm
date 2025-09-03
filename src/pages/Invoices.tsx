@@ -7,10 +7,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Eye, Edit, Download, Share, Trash2 } from 'lucide-react';
+import { Plus, Eye, Edit, Download, Share, Trash2, Edit2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { InvoiceView } from '@/components/InvoiceView';
 
 interface Invoice {
   id: string;
@@ -52,7 +53,9 @@ const Invoices: React.FC = () => {
   const [salesPipelines, setSalesPipelines] = useState<SalesPipeline[]>([]);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
+  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
+  const [editingInvoice, setEditingInvoice] = useState<Invoice | null>(null);
   const [formData, setFormData] = useState({
     serial_number: '',
     contact_id: '',
@@ -148,19 +151,44 @@ const Invoices: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    const { error } = await supabase
-      .from('invoices')
-      .insert([{ ...formData, user_id: user?.id }]);
+    try {
+      const invoiceData = {
+        ...formData,
+        contact_id: formData.contact_id || null,
+        sales_pipeline_id: formData.sales_pipeline_id || null,
+        due_date: formData.due_date || null,
+      };
 
-    if (error) {
-      toast({ title: 'Error', description: 'Failed to create invoice', variant: 'destructive' });
-      return;
+      if (editingInvoice) {
+        const { error } = await supabase
+          .from('invoices')
+          .update({
+            ...invoiceData,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', editingInvoice.id);
+
+        if (error) throw error;
+        toast({ title: 'Success', description: 'Invoice updated successfully' });
+      } else {
+        const { error } = await supabase
+          .from('invoices')
+          .insert([{
+            ...invoiceData,
+            user_id: user?.id,
+          }]);
+
+        if (error) throw error;
+        toast({ title: 'Success', description: 'Invoice created successfully' });
+      }
+
+      setIsAddDialogOpen(false);
+      resetForm();
+      fetchInvoices();
+    } catch (error) {
+      console.error('Error saving invoice:', error);
+      toast({ title: 'Error', description: 'Failed to save invoice', variant: 'destructive' });
     }
-
-    toast({ title: 'Success', description: 'Invoice created successfully' });
-    setIsAddDialogOpen(false);
-    resetForm();
-    fetchInvoices();
   };
 
   const resetForm = () => {
@@ -174,6 +202,7 @@ const Invoices: React.FC = () => {
       due_date: '',
       description: ''
     });
+    setEditingInvoice(null);
     generateSerialNumber();
   };
 
@@ -197,9 +226,29 @@ const Invoices: React.FC = () => {
     setIsShareDialogOpen(true);
   };
 
+  const handleView = (invoice: Invoice) => {
+    setSelectedInvoice(invoice);
+    setIsViewDialogOpen(true);
+  };
+
+  const handleEdit = (invoice: Invoice) => {
+    setEditingInvoice(invoice);
+    setFormData({
+      serial_number: invoice.serial_number,
+      contact_id: invoice.contact_id || '',
+      sales_pipeline_id: invoice.sales_pipeline_id || '',
+      status: invoice.status,
+      amount: invoice.amount,
+      invoice_date: invoice.invoice_date,
+      due_date: invoice.due_date || '',
+      description: invoice.description || '',
+    });
+    setIsAddDialogOpen(true);
+  };
+
   const handleDownload = (invoice: Invoice) => {
-    // Placeholder for PDF generation
-    toast({ title: 'Info', description: 'PDF download feature coming soon' });
+    // This will be handled by the InvoiceView component
+    handleView(invoice);
   };
 
   return (
@@ -215,7 +264,7 @@ const Invoices: React.FC = () => {
           </DialogTrigger>
           <DialogContent className="max-w-2xl">
             <DialogHeader>
-              <DialogTitle>Create New Invoice</DialogTitle>
+              <DialogTitle>{editingInvoice ? 'Edit Invoice' : 'Create New Invoice'}</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
@@ -320,7 +369,7 @@ const Invoices: React.FC = () => {
 
               <div className="flex gap-2">
                 <Button type="submit" className="bg-foreground text-background hover:bg-foreground/90">
-                  Create Invoice
+                  {editingInvoice ? 'Update Invoice' : 'Create Invoice'}
                 </Button>
                 <Button type="button" variant="outline" onClick={() => setIsAddDialogOpen(false)}>
                   Cancel
@@ -367,19 +416,16 @@ const Invoices: React.FC = () => {
                     <td className="p-4">{new Date(invoice.invoice_date).toLocaleDateString()}</td>
                     <td className="p-4">
                       <div className="flex gap-2">
-                        <Button size="sm" variant="outline">
+                        <Button size="sm" variant="outline" onClick={() => handleView(invoice)} title="View">
                           <Eye className="h-4 w-4" />
                         </Button>
-                        <Button size="sm" variant="outline">
-                          <Edit className="h-4 w-4" />
+                        <Button size="sm" variant="outline" onClick={() => handleEdit(invoice)} title="Edit">
+                          <Edit2 className="h-4 w-4" />
                         </Button>
-                        <Button size="sm" variant="outline" onClick={() => handleDownload(invoice)}>
-                          <Download className="h-4 w-4" />
-                        </Button>
-                        <Button size="sm" variant="outline" onClick={() => handleShare(invoice)}>
+                        <Button size="sm" variant="outline" onClick={() => handleShare(invoice)} title="Share">
                           <Share className="h-4 w-4" />
                         </Button>
-                        <Button size="sm" variant="outline" onClick={() => handleDelete(invoice.id)}>
+                        <Button size="sm" variant="outline" onClick={() => handleDelete(invoice.id)} title="Delete">
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
@@ -417,6 +463,22 @@ const Invoices: React.FC = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Invoice View Dialog */}
+      {selectedInvoice && (
+        <InvoiceView
+          invoice={selectedInvoice}
+          isOpen={isViewDialogOpen}
+          onClose={() => {
+            setIsViewDialogOpen(false);
+            setSelectedInvoice(null);
+          }}
+          onEdit={() => {
+            setIsViewDialogOpen(false);
+            handleEdit(selectedInvoice);
+          }}
+        />
+      )}
     </div>
   );
 };
