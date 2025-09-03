@@ -115,7 +115,7 @@ const SalesPipeline = () => {
     try {
       const pipelineData = {
         ...formData,
-        contact_id: formData.contact_id || null,
+        contact_id: formData.contact_id === 'none' ? null : formData.contact_id || null,
       };
 
       if (editingPipeline) {
@@ -282,7 +282,7 @@ const SalesPipeline = () => {
                       <SelectValue placeholder="Select a contact" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">No contact</SelectItem>
+                      <SelectItem value="none">No contact</SelectItem>
                       {contacts.map((contact) => (
                         <SelectItem key={contact.id} value={contact.id}>
                           {contact.name} - {contact.company}
