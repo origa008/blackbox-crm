@@ -23,7 +23,7 @@ interface SalesPipeline {
   title: string;
   description: string | null;
   contact_id: string | null;
-  status: 'In progress' | 'Closed won' | 'Cancelled';
+  status: 'pending' | 'in_progress' | 'closed_won' | 'closed_lost';
   notes: string | null;
   amount: number;
   created_at: string;
@@ -34,7 +34,7 @@ interface PipelineFormData {
   title: string;
   description: string;
   contact_id: string;
-  status: 'In progress' | 'Closed won' | 'Cancelled';
+  status: 'pending' | 'in_progress' | 'closed_won' | 'closed_lost';
   notes: string;
   amount: number;
 }
@@ -51,7 +51,7 @@ const SalesPipeline = () => {
     title: '',
     description: '',
     contact_id: '',
-    status: 'In progress',
+    status: 'pending',
     notes: '',
     amount: 0,
   });
@@ -187,7 +187,7 @@ const SalesPipeline = () => {
       title: '',
       description: '',
       contact_id: '',
-      status: 'In progress',
+      status: 'pending',
       notes: '',
       amount: 0,
     });
@@ -195,11 +195,13 @@ const SalesPipeline = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'In progress':
+      case 'pending':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'in_progress':
         return 'bg-blue-100 text-blue-800';
-      case 'Closed won':
+      case 'closed_won':
         return 'bg-green-100 text-green-800';
-      case 'Cancelled':
+      case 'closed_lost':
         return 'bg-red-100 text-red-800';
       default:
         return 'bg-gray-100 text-gray-800';
@@ -231,9 +233,10 @@ const SalesPipeline = () => {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value="In progress">In progress</SelectItem>
-              <SelectItem value="Closed won">Closed won</SelectItem>
-              <SelectItem value="Cancelled">Cancelled</SelectItem>
+              <SelectItem value="pending">Pending</SelectItem>
+              <SelectItem value="in_progress">In Progress</SelectItem>
+              <SelectItem value="closed_won">Closed Won</SelectItem>
+              <SelectItem value="closed_lost">Closed Lost</SelectItem>
             </SelectContent>
           </Select>
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
@@ -307,15 +310,16 @@ const SalesPipeline = () => {
                     <Label htmlFor="status">Status</Label>
                     <Select 
                       value={formData.status} 
-                      onValueChange={(value: 'In progress' | 'Closed won' | 'Cancelled') => setFormData({ ...formData, status: value })}
+                      onValueChange={(value: 'pending' | 'in_progress' | 'closed_won' | 'closed_lost') => setFormData({ ...formData, status: value })}
                     >
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="In progress">In progress</SelectItem>
-                        <SelectItem value="Closed won">Closed won</SelectItem>
-                        <SelectItem value="Cancelled">Cancelled</SelectItem>
+                        <SelectItem value="pending">Pending</SelectItem>
+                        <SelectItem value="in_progress">In Progress</SelectItem>
+                        <SelectItem value="closed_won">Closed Won</SelectItem>
+                        <SelectItem value="closed_lost">Closed Lost</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>

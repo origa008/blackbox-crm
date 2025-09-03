@@ -78,7 +78,7 @@ const Dashboard = () => {
           )
         `)
         .eq('user_id', user.id)
-        .eq('status', 'In progress')
+        .eq('status', 'in_progress')
         .limit(5);
 
       // Fetch recent messages
@@ -94,7 +94,7 @@ const Dashboard = () => {
         .from('sales_pipelines')
         .select('amount')
         .eq('user_id', user.id)
-        .eq('status', 'Closed won');
+        .eq('status', 'closed_won');
 
       const { data: totalDeals } = await supabase
         .from('sales_pipelines')
@@ -207,7 +207,7 @@ const Dashboard = () => {
         <Card>
           <CardHeader>
             <CardTitle>Deals in Progress</CardTitle>
-            <CardDescription>Sales pipelines with In progress status</CardDescription>
+            <CardDescription>Sales pipelines with In Progress status</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
