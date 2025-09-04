@@ -16,6 +16,7 @@ interface Contact {
   id: string;
   name: string;
   company: string;
+  phone: string | null;
 }
 
 interface SalesPipeline {
@@ -75,7 +76,8 @@ const SalesPipeline = () => {
           contacts (
             id,
             name,
-            company
+            company,
+            phone
           )
         `)
         .eq('user_id', user.id)
@@ -97,7 +99,7 @@ const SalesPipeline = () => {
     try {
       const { data, error } = await supabase
         .from('contacts')
-        .select('id, name, company')
+        .select('id, name, company, phone')
         .eq('user_id', user.id)
         .order('name');
 
@@ -285,11 +287,24 @@ const SalesPipeline = () => {
                       <SelectItem value="none">No contact</SelectItem>
                       {contacts.map((contact) => (
                         <SelectItem key={contact.id} value={contact.id}>
-                          {contact.name} - {contact.company}
+                          {contact.name} - {contact.company} - {contact.phone || 'No phone'}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
+                  {formData.contact_id && formData.contact_id !== 'none' && (
+                    <div className="mt-2 text-sm text-muted-foreground">
+                      {(() => {
+                        const contact = contacts.find(c => c.id === formData.contact_id);
+                        return contact ? (
+                          <div>
+                            <p><strong>Company:</strong> {contact.company || 'N/A'}</p>
+                            <p><strong>Phone:</strong> {contact.phone || 'N/A'}</p>
+                          </div>
+                        ) : null;
+                      })()}
+                    </div>
+                  )}
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
@@ -390,7 +405,7 @@ const SalesPipeline = () => {
                       )}
                     </div>
                   </TableCell>
-                  <TableCell>${pipeline.amount}</TableCell>
+                  <TableCell>PKR {pipeline.amount.toLocaleString()}</TableCell>
                   <TableCell>
                     <Badge className={getStatusColor(pipeline.status)}>
                       {pipeline.status}

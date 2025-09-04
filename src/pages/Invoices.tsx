@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Eye, Edit, Download, Share, Trash2, Edit2 } from 'lucide-react';
+import { Plus, Eye, Edit, Download, Share, Trash2, Edit2, Search } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
@@ -56,6 +56,7 @@ const Invoices: React.FC = () => {
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [editingInvoice, setEditingInvoice] = useState<Invoice | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
   const [formData, setFormData] = useState({
     serial_number: '',
     contact_id: '',
@@ -251,17 +252,34 @@ const Invoices: React.FC = () => {
     handleView(invoice);
   };
 
+  const filteredInvoices = invoices.filter(invoice =>
+    invoice.serial_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    invoice.contacts?.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    invoice.contacts?.company?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    invoice.description?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-medium text-foreground">Invoices</h1>
-        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-          <DialogTrigger asChild>
-            <Button onClick={generateSerialNumber} className="bg-foreground text-background hover:bg-foreground/90">
-              <Plus className="h-4 w-4 mr-2" />
-              Add Invoice
-            </Button>
-          </DialogTrigger>
+        <div className="flex items-center gap-4">
+          <div className="relative">
+            <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search invoices..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 w-64"
+            />
+          </div>
+          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+            <DialogTrigger asChild>
+              <Button onClick={generateSerialNumber} className="bg-foreground text-background hover:bg-foreground/90">
+                <Plus className="h-4 w-4 mr-2" />
+                Add Invoice
+              </Button>
+            </DialogTrigger>
           <DialogContent className="max-w-2xl">
             <DialogHeader>
               <DialogTitle>{editingInvoice ? 'Edit Invoice' : 'Create New Invoice'}</DialogTitle>
@@ -376,8 +394,9 @@ const Invoices: React.FC = () => {
                 </Button>
               </div>
             </form>
-          </DialogContent>
-        </Dialog>
+            </DialogContent>
+          </Dialog>
+          </div>
       </div>
 
       <Card>
@@ -398,7 +417,7 @@ const Invoices: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {invoices.map((invoice) => (
+                {filteredInvoices.map((invoice) => (
                   <tr key={invoice.id} className="border-b border-border">
                     <td className="p-4">{invoice.serial_number}</td>
                     <td className="p-4">
@@ -407,7 +426,7 @@ const Invoices: React.FC = () => {
                         <div className="text-sm text-muted-foreground">{invoice.contacts?.company}</div>
                       </div>
                     </td>
-                    <td className="p-4">${invoice.amount}</td>
+                    <td className="p-4">PKR {invoice.amount.toLocaleString()}</td>
                     <td className="p-4">
                       <Badge variant={invoice.status === 'paid' ? 'default' : 'secondary'}>
                         {invoice.status}

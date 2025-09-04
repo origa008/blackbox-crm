@@ -165,108 +165,135 @@ export const InvoiceView: React.FC<InvoiceViewProps> = ({
           </div>
         </DialogHeader>
 
-        <div id="invoice-content" className="bg-white p-8 min-h-[600px]">
+        <div id="invoice-content" className="bg-gradient-to-br from-background to-muted/20 p-8 rounded-xl border shadow-sm min-h-[600px]">
           {/* Invoice Header */}
-          <div className="flex justify-between items-start mb-8">
+          <div className="flex justify-between items-start mb-8 pb-6 border-b border-border/50">
             <div>
-              <h1 className="text-3xl font-bold mb-2">Invoice</h1>
-              <p className="text-lg text-gray-600">Blackbox</p>
+              <h1 className="text-4xl font-bold text-foreground mb-2">INVOICE</h1>
+              <p className="text-muted-foreground text-lg">#{invoice.serial_number}</p>
             </div>
-            <div className="w-16 h-16 bg-black rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-xl">B</span>
+            <div className="text-right">
+              <h2 className="text-3xl font-bold text-foreground">BlackBox</h2>
+              <p className="text-muted-foreground text-sm mt-1">Professional Services</p>
             </div>
           </div>
 
-          {/* Company & Invoice Details */}
-          <div className="grid grid-cols-2 gap-8 mb-8">
-            <div>
-              <h3 className="font-semibold mb-2">From:</h3>
-              <div className="text-sm text-gray-600 space-y-1">
-                <p className="font-medium">Blackbox</p>
-                <p>ABN: 77 552 027 392</p>
-                <p>Email: hello@blackbox.com</p>
-                <p>Phone: +1 (555) 123-4567</p>
-                <p>Address: 123 Business St, Suite 100, City, State 12345</p>
+          {/* Company Info and Invoice Details */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+            {/* From Section */}
+            <div className="bg-card/50 p-6 rounded-lg border border-border/30">
+              <h3 className="text-sm font-semibold text-foreground mb-4">FROM</h3>
+              <div className="text-sm text-muted-foreground space-y-2">
+                <p className="font-semibold text-foreground">BlackBox Solutions</p>
+                <p>123 Business Street, Karachi, Pakistan</p>
+                <p>+92 300 1234567</p>
+                <p>info@blackbox.com</p>
               </div>
             </div>
-            <div>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="font-medium">Invoice for:</span>
-                  <span>{contact?.company || 'N/A'}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="font-medium">Invoice ID:</span>
-                  <span>{invoice.serial_number}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="font-medium">Date of issue:</span>
-                  <span>{new Date(invoice.invoice_date).toLocaleDateString()}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="font-medium">Payment due:</span>
-                  <span>{invoice.due_date ? new Date(invoice.due_date).toLocaleDateString() : 'N/A'}</span>
-                </div>
+
+            {/* To Section */}
+            <div className="bg-card/50 p-6 rounded-lg border border-border/30">
+              <h3 className="text-sm font-semibold text-foreground mb-4">BILL TO</h3>
+              <div className="text-sm text-muted-foreground space-y-2">
+                <p className="font-semibold text-foreground">{contact?.name || 'N/A'}</p>
+                {contact?.company && <p className="text-foreground">{contact.company}</p>}
+                {contact?.phone && <p>{contact.phone}</p>}
+                {contact?.email && <p>{contact.email}</p>}
               </div>
             </div>
           </div>
 
-          {/* Bill To */}
-          {contact && (
-            <div className="mb-8">
-              <h3 className="font-semibold mb-2">Bill To:</h3>
-              <div className="text-sm text-gray-600 space-y-1">
-                <p className="font-medium">{contact.name}</p>
-                {contact.company && <p>{contact.company}</p>}
-                {contact.email && <p>{contact.email}</p>}
-                {contact.phone && <p>{contact.phone}</p>}
-              </div>
+          {/* Invoice Details */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div className="text-center p-4 bg-primary/5 rounded-lg border border-primary/20">
+              <p className="text-xs font-medium text-muted-foreground mb-2">Invoice Date</p>
+              <p className="text-sm font-semibold text-foreground">
+                {new Date(invoice.invoice_date).toLocaleDateString()}
+              </p>
             </div>
-          )}
+            <div className="text-center p-4 bg-primary/5 rounded-lg border border-primary/20">
+              <p className="text-xs font-medium text-muted-foreground mb-2">Due Date</p>
+              <p className="text-sm font-semibold text-foreground">
+                {invoice.due_date ? new Date(invoice.due_date).toLocaleDateString() : 'Not specified'}
+              </p>
+            </div>
+            <div className="text-center p-4 bg-primary/5 rounded-lg border border-primary/20">
+              <p className="text-xs font-medium text-muted-foreground mb-2">Status</p>
+              <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${
+                invoice.status === 'paid' 
+                  ? 'bg-green-100 text-green-800 border border-green-200' 
+                  : 'bg-amber-100 text-amber-800 border border-amber-200'
+              }`}>
+                {invoice.status.toUpperCase()}
+              </span>
+            </div>
+          </div>
 
-          {/* Services Table */}
+          {/* Services */}
           <div className="mb-8">
-            <h3 className="font-semibold mb-4">Description of services</h3>
-            <table className="w-full border-collapse">
-              <thead>
-                <tr className="border-b">
-                  <th className="text-left py-2 font-medium text-sm">Description</th>
-                  <th className="text-right py-2 font-medium text-sm">Quantity</th>
-                  <th className="text-right py-2 font-medium text-sm">Unit price</th>
-                  <th className="text-right py-2 font-medium text-sm">Total</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr className="border-b">
-                  <td className="py-3 text-sm">
-                    {salesPipeline?.title || invoice.description || 'Service'}
-                  </td>
-                  <td className="text-right py-3 text-sm">1</td>
-                  <td className="text-right py-3 text-sm">${invoice.amount.toFixed(2)}</td>
-                  <td className="text-right py-3 text-sm">${invoice.amount.toFixed(2)}</td>
-                </tr>
-              </tbody>
-            </table>
-
-            <div className="flex justify-end mt-4">
-              <div className="w-64 space-y-2">
-                <div className="flex justify-between font-semibold text-lg">
-                  <span>Total amount due</span>
-                  <span>${invoice.amount.toFixed(2)}</span>
+            <h3 className="text-lg font-semibold text-foreground mb-6">Description of Services</h3>
+            <div className="bg-card border border-border rounded-lg overflow-hidden">
+              <div className="p-6">
+                <div className="flex justify-between items-start">
+                  <div className="flex-1">
+                    <p className="font-medium text-foreground text-lg">
+                      {salesPipeline?.title || invoice.description || 'Professional Services'}
+                    </p>
+                    <p className="text-muted-foreground mt-2">Quality service delivery as per agreement</p>
+                  </div>
+                  <div className="text-right ml-6">
+                    <p className="text-2xl font-bold text-primary">PKR {invoice.amount.toLocaleString()}</p>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Bank Details */}
-          <div>
-            <h3 className="font-semibold mb-2">Bank details for payment:</h3>
-            <div className="text-sm text-gray-600 space-y-1">
-              <p>Bank: Wells Fargo</p>
-              <p>BSB: 123-456</p>
-              <p>Account number: 987654321</p>
-              <p>Name: Blackbox</p>
+          {/* Total */}
+          <div className="bg-gradient-to-r from-primary/5 to-primary/10 border border-primary/20 rounded-lg p-6">
+            <div className="flex justify-end">
+              <div className="w-80">
+                <div className="flex justify-between items-center py-3 border-b border-primary/20">
+                  <span className="font-medium text-muted-foreground">Subtotal:</span>
+                  <span className="font-medium text-foreground">PKR {invoice.amount.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between items-center py-4">
+                  <span className="text-xl font-bold text-foreground">Total Amount:</span>
+                  <span className="text-2xl font-bold text-primary">PKR {invoice.amount.toLocaleString()}</span>
+                </div>
+              </div>
             </div>
+          </div>
+
+          {/* Payment Info */}
+          <div className="mt-8 pt-6 border-t border-border">
+            <h3 className="text-lg font-semibold text-foreground mb-4">Payment Information</h3>
+            <div className="bg-card border border-border rounded-lg p-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
+                <div>
+                  <p className="font-semibold text-foreground mb-3">Bank Details:</p>
+                  <div className="space-y-1 text-muted-foreground">
+                    <p><span className="font-medium">Bank:</span> Meezan Bank Limited</p>
+                    <p><span className="font-medium">Account:</span> 0123456789012345</p>
+                    <p><span className="font-medium">IBAN:</span> PK36MEZN0000010123456789</p>
+                  </div>
+                </div>
+                <div>
+                  <p className="font-semibold text-foreground mb-3">Payment Terms:</p>
+                  <div className="space-y-1 text-muted-foreground">
+                    <p>Net 30 days</p>
+                    <p>Late payment may incur charges</p>
+                    <p>All payments in PKR</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Footer */}
+          <div className="mt-8 pt-6 border-t border-border text-center">
+            <p className="text-lg font-medium text-foreground mb-2">Thank you for your business!</p>
+            <p className="text-sm text-muted-foreground">For any queries regarding this invoice, please contact us at info@blackbox.com</p>
           </div>
         </div>
       </DialogContent>

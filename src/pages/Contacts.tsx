@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Edit, Trash2, Eye } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye, Search } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Contact {
@@ -37,6 +37,7 @@ const Contacts = () => {
   const [editingContact, setEditingContact] = useState<Contact | null>(null);
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [searchQuery, setSearchQuery] = useState('');
   const [formData, setFormData] = useState<ContactFormData>({
     name: '',
     phone: '',
@@ -162,12 +163,19 @@ const Contacts = () => {
     return colors[ranking - 1] || colors[0];
   };
 
-  const paginatedContacts = contacts.slice(
+  const filteredContacts = contacts.filter(contact =>
+    contact.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    contact.company?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    contact.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    contact.phone?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const paginatedContacts = filteredContacts.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
 
-  const totalPages = Math.ceil(contacts.length / itemsPerPage);
+  const totalPages = Math.ceil(filteredContacts.length / itemsPerPage);
 
   if (loading) {
     return (
@@ -182,16 +190,26 @@ const Contacts = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Contacts</h1>
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogTrigger asChild>
-            <Button onClick={() => {
-              setEditingContact(null);
-              resetForm();
-            }}>
-              <Plus className="w-4 h-4 mr-2" />
-              Add Contact
-            </Button>
-          </DialogTrigger>
+        <div className="flex items-center gap-4">
+          <div className="relative">
+            <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search contacts..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 w-64"
+            />
+          </div>
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <DialogTrigger asChild>
+              <Button onClick={() => {
+                setEditingContact(null);
+                resetForm();
+              }}>
+                <Plus className="w-4 h-4 mr-2" />
+                Add Contact
+              </Button>
+            </DialogTrigger>
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
               <DialogTitle>{editingContact ? 'Edit Contact' : 'Add New Contact'}</DialogTitle>
@@ -236,7 +254,7 @@ const Contacts = () => {
                 />
               </div>
               <div>
-                <Label htmlFor="ranking">Ranking</Label>
+                <Label htmlFor="ranking">Credibility</Label>
                 <Select 
                   value={formData.ranking.toString()} 
                   onValueChange={(value) => setFormData({ ...formData, ranking: parseInt(value) })}
@@ -270,8 +288,9 @@ const Contacts = () => {
                 </Button>
               </div>
             </form>
-          </DialogContent>
-        </Dialog>
+            </DialogContent>
+          </Dialog>
+          </div>
       </div>
 
       <div className="rounded-lg border bg-card">
@@ -282,7 +301,7 @@ const Contacts = () => {
               <TableHead>Phone</TableHead>
               <TableHead>Email</TableHead>
               <TableHead>Company</TableHead>
-              <TableHead>Ranking</TableHead>
+              <TableHead>Credibility</TableHead>
               <TableHead className="w-32">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -341,7 +360,7 @@ const Contacts = () => {
       {totalPages > 1 && (
         <div className="flex items-center justify-between">
           <div className="text-sm text-muted-foreground">
-            Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, contacts.length)} of {contacts.length} contacts
+            Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, filteredContacts.length)} of {filteredContacts.length} contacts
           </div>
           <div className="flex gap-2">
             <Button
@@ -390,7 +409,7 @@ const Contacts = () => {
                 <p className="text-sm">{selectedContact.company || 'Not provided'}</p>
               </div>
               <div>
-                <Label>Ranking</Label>
+                <Label>Credibility</Label>
                 <Badge className={getRankingColor(selectedContact.ranking)}>
                   {selectedContact.ranking}
                 </Badge>
