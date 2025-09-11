@@ -31,7 +31,7 @@ const Profile = () => {
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
-        .eq('id', user?.id)
+        .eq('user_id', user?.id)
         .single();
 
       if (error && error.code !== 'PGRST116') {
@@ -61,7 +61,7 @@ const Profile = () => {
       const { error } = await supabase
         .from('profiles')
         .upsert({
-          id: user.id,
+          user_id: user.id,
           name: profile.name,
           company: profile.company,
           phone: profile.phone,
