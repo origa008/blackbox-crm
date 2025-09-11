@@ -5,119 +5,90 @@ import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { LayoutDashboard, Users, TrendingUp, FileText, Menu, LogOut, Sun, Moon, User, CreditCard } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
-
 interface LayoutProps {
   children: React.ReactNode;
 }
-
-const Layout: React.FC<LayoutProps> = ({ children }) => {
-  const { signOut } = useAuth();
-  const { theme, toggleTheme } = useTheme();
+const Layout: React.FC<LayoutProps> = ({
+  children
+}) => {
+  const {
+    signOut
+  } = useAuth();
+  const {
+    theme,
+    toggleTheme
+  } = useTheme();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-
-  const navigationItems = [
-    { name: 'Dashboard', href: '/', icon: LayoutDashboard },
-    { name: 'Contacts', href: '/contacts', icon: Users },
-    { name: 'Sales Pipeline', href: '/sales-pipeline', icon: TrendingUp },
-    { name: 'Invoices', href: '/invoices', icon: FileText },
-  ];
-
+  const navigationItems = [{
+    name: 'Dashboard',
+    href: '/',
+    icon: LayoutDashboard
+  }, {
+    name: 'Contacts',
+    href: '/contacts',
+    icon: Users
+  }, {
+    name: 'Sales Pipeline',
+    href: '/sales-pipeline',
+    icon: TrendingUp
+  }, {
+    name: 'Invoices',
+    href: '/invoices',
+    icon: FileText
+  }];
   const isActive = (href: string) => location.pathname === href;
-
   const handleSignOut = async () => {
     await signOut();
   };
-
-  const SidebarContent = () => (
-    <div className="flex flex-col h-full">
+  const SidebarContent = () => <div className="flex flex-col h-full">
       <div className="p-6">
         <h2 className="text-xl font-bold">BlackBox CRM</h2>
       </div>
       
       <nav className="flex-1 px-4 space-y-2">
-        {navigationItems.map((item) => {
-          const Icon = item.icon;
-          return (
-            <button
-              key={item.name}
-              onClick={() => {
-                navigate(item.href);
-                setSidebarOpen(false);
-              }}
-              className={`w-full flex items-center px-4 py-3 text-left rounded-lg transition-colors ${
-                isActive(item.href)
-                  ? 'bg-primary text-primary-foreground'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
-              }`}
-            >
+        {navigationItems.map(item => {
+        const Icon = item.icon;
+        return <button key={item.name} onClick={() => {
+          navigate(item.href);
+          setSidebarOpen(false);
+        }} className={`w-full flex items-center px-4 py-3 text-left rounded-lg transition-colors ${isActive(item.href) ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-secondary'}`}>
               <Icon className="w-5 h-5 mr-3" />
               {item.name}
-            </button>
-          );
-        })}
+            </button>;
+      })}
       </nav>
       
       <div className="p-4">
         <div className="bg-card border rounded-lg p-3 space-y-1">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => {
-              navigate('/profile');
-              setSidebarOpen(false);
-            }}
-            className="w-full justify-start text-card-foreground hover:bg-accent"
-          >
+          <Button variant="ghost" size="sm" onClick={() => {
+          navigate('/profile');
+          setSidebarOpen(false);
+        }} className="w-full justify-start text-card-foreground hover:bg-accent">
             <User className="w-4 h-4 mr-2" />
             Profile
           </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => {
-              navigate('/pricing');
-              setSidebarOpen(false);
-            }}
-            className="w-full justify-start text-card-foreground hover:bg-accent"
-          >
+          <Button variant="ghost" size="sm" onClick={() => {
+          navigate('/pricing');
+          setSidebarOpen(false);
+        }} className="w-full justify-start text-card-foreground hover:bg-accent">
             <CreditCard className="w-4 h-4 mr-2" />
             Pricing
           </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleSignOut}
-            className="w-full justify-start text-destructive hover:text-destructive hover:bg-destructive/10"
-          >
+          <Button variant="ghost" size="sm" onClick={handleSignOut} className="w-full justify-start text-destructive hover:text-destructive hover:bg-destructive/10">
             <LogOut className="w-4 h-4 mr-2" />
             Sign Out
           </Button>
         </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={toggleTheme}
-          className="w-full justify-start mt-2"
-        >
-          {theme === 'light' ? <Moon className="w-4 h-4 mr-2" /> : <Sun className="w-4 h-4 mr-2" />}
-          {theme === 'light' ? 'Dark Mode' : 'Light Mode'}
-        </Button>
+        
       </div>
-    </div>
-  );
-
-  return (
-    <div className="min-h-screen bg-background">
+    </div>;
+  return <div className="min-h-screen bg-background">
       {/* Mobile Sidebar */}
       <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
         <SheetTrigger asChild>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="lg:hidden fixed top-4 left-4 z-40"
-          >
+          <Button variant="ghost" size="sm" className="lg:hidden fixed top-4 left-4 z-40">
             <Menu className="h-5 w-5" />
           </Button>
         </SheetTrigger>
@@ -139,8 +110,6 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           {children}
         </main>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default Layout;
