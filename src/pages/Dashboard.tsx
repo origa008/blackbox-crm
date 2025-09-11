@@ -34,7 +34,11 @@ interface Deal {
     company: string;
     phone: string;
     email: string;
+    address: string;
   };
+  invoices?: {
+    status: string;
+  }[];
 }
 
 interface Message {
@@ -110,7 +114,7 @@ const Dashboard = () => {
           previousEndDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7);
       }
 
-      // Fetch deals in progress with full contact info
+      // Fetch deals in progress with full contact info and invoice status
       const { data: dealsData } = await supabase
         .from('sales_pipelines')
         .select(`
@@ -119,7 +123,11 @@ const Dashboard = () => {
             name,
             company,
             phone,
-            email
+            email,
+            address
+          ),
+          invoices (
+            status
           )
         `)
         .eq('user_id', user.id)
@@ -305,36 +313,42 @@ const Dashboard = () => {
               <p className="text-sm text-muted-foreground">No deals in progress found</p>
             ) : (
               <div className="rounded-lg border bg-card">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Title</TableHead>
-                      <TableHead>Company</TableHead>
-                      <TableHead>Phone</TableHead>
-                      <TableHead>Amount</TableHead>
-                      <TableHead className="w-20">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {deals.map((deal) => (
-                      <TableRow key={deal.id}>
-                        <TableCell className="font-medium">{deal.title}</TableCell>
-                        <TableCell>{deal.contacts?.company || 'No company'}</TableCell>
-                        <TableCell>{deal.contacts?.phone || 'No phone'}</TableCell>
-                        <TableCell>PKR {deal.amount.toLocaleString()}</TableCell>
-                        <TableCell>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => handleViewDeal(deal)}
-                          >
-                            <Eye className="w-4 h-4" />
-                          </Button>
-                        </TableCell>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Company</TableHead>
+                        <TableHead>Description</TableHead>
+                        <TableHead>Phone</TableHead>
+                        <TableHead>Amount</TableHead>
+                        <TableHead>Invoice Status</TableHead>
+                        <TableHead className="w-20">Actions</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {deals.map((deal) => (
+                        <TableRow key={deal.id}>
+                          <TableCell className="font-medium">{deal.contacts?.company || 'No company'}</TableCell>
+                          <TableCell className="max-w-40 truncate">{deal.description || '-'}</TableCell>
+                          <TableCell>{deal.contacts?.phone || 'No phone'}</TableCell>
+                          <TableCell>PKR {deal.amount.toLocaleString()}</TableCell>
+                          <TableCell>
+                            <Badge variant={deal.invoices && deal.invoices.length > 0 ? 'default' : 'secondary'}>
+                              {deal.invoices && deal.invoices.length > 0 ? deal.invoices[0].status : 'No Invoice'}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => handleViewDeal(deal)}
+                            >
+                              <Eye className="w-4 h-4" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
               </div>
             )}
           </CardContent>

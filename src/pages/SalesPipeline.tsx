@@ -17,6 +17,7 @@ interface Contact {
   name: string;
   company: string;
   phone: string | null;
+  address: string | null;
 }
 
 interface SalesPipeline {
@@ -29,10 +30,12 @@ interface SalesPipeline {
   amount: number;
   created_at: string;
   contacts?: Contact;
+  invoices?: {
+    status: string;
+  }[];
 }
 
 interface PipelineFormData {
-  title: string;
   description: string;
   contact_id: string;
   status: 'in_progress' | 'closed_won' | 'closed_lost';
@@ -46,10 +49,11 @@ const SalesPipeline = () => {
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [editingPipeline, setEditingPipeline] = useState<SalesPipeline | null>(null);
+  const [viewingPipeline, setViewingPipeline] = useState<SalesPipeline | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [formData, setFormData] = useState<PipelineFormData>({
-    title: '',
     description: '',
     contact_id: '',
     status: 'in_progress',
@@ -77,7 +81,11 @@ const SalesPipeline = () => {
             id,
             name,
             company,
-            phone
+            phone,
+            address
+          ),
+          invoices (
+            status
           )
         `)
         .eq('user_id', user.id)
@@ -99,7 +107,7 @@ const SalesPipeline = () => {
     try {
       const { data, error } = await supabase
         .from('contacts')
-        .select('id, name, company, phone')
+        .select('id, name, company, phone, address')
         .eq('user_id', user.id)
         .order('name');
 
@@ -108,6 +116,12 @@ const SalesPipeline = () => {
     } catch (error) {
       console.error('Error fetching contacts:', error);
     }
+  };
+
+  const generateSerial = () => {
+    const timestamp = Date.now().toString().slice(-6);
+    const random = Math.random().toString(36).substring(2, 5).toUpperCase();
+    return `SP-${timestamp}${random}`;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -136,6 +150,7 @@ const SalesPipeline = () => {
           .from('sales_pipelines')
           .insert({
             ...pipelineData,
+            title: generateSerial(),
             user_id: user.id,
           });
 
@@ -156,7 +171,6 @@ const SalesPipeline = () => {
   const handleEdit = (pipeline: SalesPipeline) => {
     setEditingPipeline(pipeline);
     setFormData({
-      title: pipeline.title,
       description: pipeline.description || '',
       contact_id: pipeline.contact_id || '',
       status: pipeline.status,
@@ -164,6 +178,11 @@ const SalesPipeline = () => {
       amount: pipeline.amount,
     });
     setDialogOpen(true);
+  };
+
+  const handleView = (pipeline: SalesPipeline) => {
+    setViewingPipeline(pipeline);
+    setViewDialogOpen(true);
   };
 
   const handleDelete = async (pipelineId: string) => {
@@ -186,7 +205,6 @@ const SalesPipeline = () => {
 
   const resetForm = () => {
     setFormData({
-      title: '',
       description: '',
       contact_id: '',
       status: 'in_progress',
@@ -256,15 +274,13 @@ const SalesPipeline = () => {
                 </DialogDescription>
               </DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <Label htmlFor="title">Title *</Label>
-                  <Input
-                    id="title"
-                    value={formData.title}
-                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    required
-                  />
-                </div>
+                {!editingPipeline && (
+                  <div className="p-3 bg-muted rounded-lg">
+                    <p className="text-sm text-muted-foreground">
+                      Serial number will be automatically generated upon creation
+                    </p>
+                  </div>
+                )}
                 <div>
                   <Label htmlFor="description">Description</Label>
                   <Textarea
@@ -366,17 +382,90 @@ const SalesPipeline = () => {
         </div>
       </div>
 
+      {/* View Pipeline Dialog */}
+      {viewingPipeline && (
+        <Dialog open={viewDialogOpen} onOpenChange={setViewDialogOpen}>
+          <DialogContent className="sm:max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Sales Pipeline Details</DialogTitle>
+              <DialogDescription>Complete information about this sales pipeline</DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <h4 className="font-medium text-sm">Serial</h4>
+                  <p className="text-sm text-muted-foreground">{viewingPipeline.title}</p>
+                </div>
+                <div>
+                  <h4 className="font-medium text-sm">Amount</h4>
+                  <p className="text-sm text-muted-foreground">PKR {viewingPipeline.amount.toLocaleString()}</p>
+                </div>
+                <div>
+                  <h4 className="font-medium text-sm">Status</h4>
+                  <Badge className={getStatusColor(viewingPipeline.status)}>
+                    {viewingPipeline.status}
+                  </Badge>
+                </div>
+                <div>
+                  <h4 className="font-medium text-sm">Invoice Status</h4>
+                  <Badge variant={viewingPipeline.invoices && viewingPipeline.invoices.length > 0 ? 'default' : 'secondary'}>
+                    {viewingPipeline.invoices && viewingPipeline.invoices.length > 0 ? viewingPipeline.invoices[0].status : 'No Invoice'}
+                  </Badge>
+                </div>
+              </div>
+              {viewingPipeline.description && (
+                <div>
+                  <h4 className="font-medium text-sm">Description</h4>
+                  <p className="text-sm text-muted-foreground">{viewingPipeline.description}</p>
+                </div>
+              )}
+              {viewingPipeline.contacts && (
+                <div>
+                  <h4 className="font-medium text-sm mb-2">Contact Information</h4>
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <span className="font-medium">Name:</span> {viewingPipeline.contacts.name}
+                    </div>
+                    <div>
+                      <span className="font-medium">Company:</span> {viewingPipeline.contacts.company || 'N/A'}
+                    </div>
+                    <div>
+                      <span className="font-medium">Phone:</span> {viewingPipeline.contacts.phone || 'N/A'}
+                    </div>
+                    <div>
+                      <span className="font-medium">Address:</span> {viewingPipeline.contacts.address || 'N/A'}
+                    </div>
+                  </div>
+                </div>
+              )}
+              {viewingPipeline.notes && (
+                <div>
+                  <h4 className="font-medium text-sm">Notes</h4>
+                  <p className="text-sm text-muted-foreground">{viewingPipeline.notes}</p>
+                </div>
+              )}
+              <div>
+                <h4 className="font-medium text-sm">Created</h4>
+                <p className="text-sm text-muted-foreground">
+                  {new Date(viewingPipeline.created_at).toLocaleDateString()}
+                </p>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
+
       <div className="rounded-lg border bg-card">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Title</TableHead>
+              <TableHead>Serial</TableHead>
               <TableHead>Description</TableHead>
               <TableHead>Contact</TableHead>
               <TableHead>Amount</TableHead>
               <TableHead>Status</TableHead>
+              <TableHead>Invoice Status</TableHead>
               <TableHead>Date</TableHead>
-              <TableHead>Notes</TableHead>
               <TableHead className="w-32">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -412,13 +501,22 @@ const SalesPipeline = () => {
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    {new Date(pipeline.created_at).toLocaleDateString()}
+                    <Badge variant={pipeline.invoices && pipeline.invoices.length > 0 ? 'default' : 'secondary'}>
+                      {pipeline.invoices && pipeline.invoices.length > 0 ? pipeline.invoices[0].status : 'No Invoice'}
+                    </Badge>
                   </TableCell>
-                  <TableCell className="max-w-32 truncate">
-                    {pipeline.notes || '-'}
+                  <TableCell>
+                    {new Date(pipeline.created_at).toLocaleDateString()}
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => handleView(pipeline)}
+                      >
+                        <Eye className="w-4 h-4" />
+                      </Button>
                       <Button
                         size="sm"
                         variant="ghost"
