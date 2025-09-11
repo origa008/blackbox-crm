@@ -11,6 +11,8 @@ import Dashboard from "@/pages/Dashboard";
 import Contacts from "@/pages/Contacts";
 import SalesPipeline from "@/pages/SalesPipeline";
 import Invoices from "@/pages/Invoices";
+import Profile from "@/pages/Profile";
+import Pricing from "@/pages/Pricing";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -37,6 +39,8 @@ const AppRoutes = () => {
         <Route path="/contacts" element={<Contacts />} />
         <Route path="/sales-pipeline" element={<SalesPipeline />} />
         <Route path="/invoices" element={<Invoices />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/pricing" element={<Pricing />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Layout>

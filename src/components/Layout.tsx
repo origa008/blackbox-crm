@@ -3,7 +3,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { LayoutDashboard, Users, TrendingUp, FileText, Menu, LogOut, Sun, Moon } from 'lucide-react';
+import { LayoutDashboard, Users, TrendingUp, FileText, Menu, LogOut, Sun, Moon, User, CreditCard } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 interface LayoutProps {
@@ -59,24 +59,50 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         })}
       </nav>
       
-      <div className="p-4 space-y-2">
+      <div className="p-4">
+        <div className="bg-card border rounded-lg p-3 space-y-1">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              navigate('/profile');
+              setSidebarOpen(false);
+            }}
+            className="w-full justify-start text-card-foreground hover:bg-accent"
+          >
+            <User className="w-4 h-4 mr-2" />
+            Profile
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              navigate('/pricing');
+              setSidebarOpen(false);
+            }}
+            className="w-full justify-start text-card-foreground hover:bg-accent"
+          >
+            <CreditCard className="w-4 h-4 mr-2" />
+            Pricing
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleSignOut}
+            className="w-full justify-start text-destructive hover:text-destructive hover:bg-destructive/10"
+          >
+            <LogOut className="w-4 h-4 mr-2" />
+            Sign Out
+          </Button>
+        </div>
         <Button
           variant="ghost"
           size="sm"
           onClick={toggleTheme}
-          className="w-full justify-start"
+          className="w-full justify-start mt-2"
         >
           {theme === 'light' ? <Moon className="w-4 h-4 mr-2" /> : <Sun className="w-4 h-4 mr-2" />}
           {theme === 'light' ? 'Dark Mode' : 'Light Mode'}
-        </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleSignOut}
-          className="w-full justify-start text-destructive hover:text-destructive"
-        >
-          <LogOut className="w-4 h-4 mr-2" />
-          Sign Out
         </Button>
       </div>
     </div>
