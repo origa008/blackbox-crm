@@ -17,6 +17,7 @@ interface Contact {
   phone: string | null;
   email: string | null;
   company: string | null;
+  address: string | null;
   ranking: number;
 }
 
@@ -25,6 +26,7 @@ interface ContactFormData {
   phone: string;
   email: string;
   company: string;
+  address: string;
   ranking: number;
 }
 
@@ -43,6 +45,7 @@ const Contacts = () => {
     phone: '',
     email: '',
     company: '',
+    address: '',
     ranking: 1,
   });
 
@@ -120,6 +123,7 @@ const Contacts = () => {
       phone: contact.phone || '',
       email: contact.email || '',
       company: contact.company || '',
+      address: contact.address || '',
       ranking: contact.ranking,
     });
     setDialogOpen(true);
@@ -154,6 +158,7 @@ const Contacts = () => {
       phone: '',
       email: '',
       company: '',
+      address: '',
       ranking: 1,
     });
   };
@@ -254,6 +259,14 @@ const Contacts = () => {
                 />
               </div>
               <div>
+                <Label htmlFor="address">Address</Label>
+                <Input
+                  id="address"
+                  value={formData.address}
+                  onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                />
+              </div>
+              <div>
                 <Label htmlFor="ranking">Credibility</Label>
                 <Select 
                   value={formData.ranking.toString()} 
@@ -301,6 +314,7 @@ const Contacts = () => {
               <TableHead>Phone</TableHead>
               <TableHead>Email</TableHead>
               <TableHead>Company</TableHead>
+              <TableHead>Address</TableHead>
               <TableHead>Credibility</TableHead>
               <TableHead className="w-32">Actions</TableHead>
             </TableRow>
@@ -308,7 +322,7 @@ const Contacts = () => {
           <TableBody>
             {paginatedContacts.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center py-6 text-muted-foreground">
+                <TableCell colSpan={7} className="text-center py-6 text-muted-foreground">
                   No contacts found. Create your first contact to get started.
                 </TableCell>
               </TableRow>
@@ -319,6 +333,7 @@ const Contacts = () => {
                   <TableCell>{contact.phone || '-'}</TableCell>
                   <TableCell>{contact.email || '-'}</TableCell>
                   <TableCell>{contact.company || '-'}</TableCell>
+                  <TableCell>{contact.address || '-'}</TableCell>
                   <TableCell>
                     <Badge className={getRankingColor(contact.ranking)}>
                       {contact.ranking}
@@ -407,6 +422,10 @@ const Contacts = () => {
               <div>
                 <Label>Company</Label>
                 <p className="text-sm">{selectedContact.company || 'Not provided'}</p>
+              </div>
+              <div>
+                <Label>Address</Label>
+                <p className="text-sm">{selectedContact.address || 'Not provided'}</p>
               </div>
               <div>
                 <Label>Credibility</Label>
